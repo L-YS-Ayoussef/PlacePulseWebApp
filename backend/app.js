@@ -63,7 +63,9 @@ app.use((error, req, res, next) => {
 mongoose
     .connect(process.env.DATABASE_URL)
     .then(() => {
-        app.listen(5000);
+        app.listen(5000, () => {
+            console.log('Server is running on port 5000');
+        });
     })
     .catch(err => {
         console.log(err);

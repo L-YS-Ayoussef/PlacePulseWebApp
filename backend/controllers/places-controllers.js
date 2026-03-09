@@ -119,6 +119,10 @@ const createPlace = async (req, res, next) => {
     return next(error);
   }
 
+  if (!req.file) {
+    return next(new HttpError("Please provide an image.", 422));
+  }
+  
   // Creating the new Place model
   const createdPlace = new Place({
     // id: uuidv4(),  --> in the old version before using constructing DB
