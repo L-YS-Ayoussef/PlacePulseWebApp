@@ -1,85 +1,122 @@
 const fs = require("fs");
-const { v4: uuidv4 } = require('uuid');
-const { validationResult } = require('express-validator');
 const mongoose = require("mongoose");
+const { validationResult } = require("express-validator");
 
-const HttpError = require('../models/http-error');
+const HttpError = require("../models/http-error");
 const geocodeAddress = require("../util/location");
-const Place = require('../models/place');
-const User = require('../models/user');
+const Place = require("../models/place");
+const Review = require("../models/review");
+const User = require("../models/user");
 
+const serializeDoc = (doc) =>
+  doc.toObject({ getters: true, versionKey: false });
+
+const parseTags = (tags) => {
+  if (!tags) {
+    return [];
+  }
+
+  if (Array.isArray(tags)) {
+    return tags.map((tag) => `${tag}`.trim()).filter(Boolean);
+  }
+
+  try {
+    const parsed = JSON.parse(tags);
+    if (Array.isArray(parsed)) {
+      return parsed.map((tag) => `${tag}`.trim()).filter(Boolean);
+    }
+  } catch (err) {}
+
+  return `${tags}`
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+};
+
+const parseRemovedMedia = (removedMedia) => {
+  if (!removedMedia) {
+    return [];
+  }
+
+  if (Array.isArray(removedMedia)) {
+    return removedMedia;
+  }
+
+  try {
+    const parsed = JSON.parse(removedMedia);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    return [];
+  }
+};
+
+const mapUploadedMedia = (files) =>
+  (files || []).map((file) => ({
+    url: file.path,
+    type: file.mimetype.startsWith("video/") ? "video" : "image",
+  }));
+
+const getExistingPlaceMedia = (place) => {
+  if (place.media && place.media.length > 0) {
+    return place.media;
+  }
+
+  if (place.image) {
+    return [{ url: place.image, type: "image" }];
+  }
+
+  return [];
+};
+
+const cleanupFiles = (filePaths) => {
+  filePaths.forEach((filePath) => {
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.log(err);
+      }
+    });
+  });
+};
+
+const getRecentPlaces = async (req, res, next) => {
+  let places;
+
+  try {
+    places = await Place.find({})
+      .populate("creator", "name image")
+      .sort({ createdAt: -1 })
+      .limit(24);
+  } catch (err) {
+    return next(
+      new HttpError(
+        "Fetching recent places failed, please try again later.",
+        500,
+      ),
+    );
+  }
+
+  res.json({ places: (places || []).map(serializeDoc) });
+};
 
 const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
 
   let place;
   try {
-    place = await Place.findById(placeId); // Note -> when using the keyword [await] all the following code won't be executed till the awaited function be executed 
+    place = await Place.findById(placeId).populate("creator", "name image");
   } catch (err) {
-    const error = new HttpError(
-      'Something went wrong, could not find a place.',
-      500
+    return next(
+      new HttpError("Something went wrong, could not find a place.", 500),
     );
-    return next(error);
   }
-  // Another way for handling the query instead of [async...await] using the method [.exec] -> Here is an example -> 
-  // const userQuery = User.findById(userId);
-  // Without .exec(), you can await directly or use .then()
-  // const user = await userQuery;
-  // Or using .exec()
-  // userQuery.exec((err, user) => {
-  //   if (err) {
-  //     console.error(err);
-  // Handle error
-  //   } else {
-  //     console.log(user);
-  // Do something with user
-  //   }
-  // });
 
   if (!place) {
-    // Cause the code is asyncronous we won't use [throw]. instead, using -> [return next(error);]
-    // throw new HttpError('Could not find a place for the provided id.', 404); // when throwing an error and there is no [try...catch], then the error-handling middleware defined in the [app.js] will be triggered and cause the response wasn't sent that [ res.json({ place }); ] wasn't executed, then this code will be executed when throwing the error -> [ res.status(error.code || 500); res.json({ message: error.message || 'An unknown error occurred!' }); ]
-
-    const error = new HttpError(
-      'Could not find a place for the provided id.',
-      404
+    return next(
+      new HttpError("Could not find a place for the provided id.", 404),
     );
-    return next(error);
   }
 
-  res.json({ place: place.toObject({ getters: true, transform: (doc, ret) => { delete ret._id; } }) }); // The [toObject()] method in Mongoose --> used to convert a Mongoose document into a plain JavaScript object. This method is particularly useful when you need to manipulate the data or send it over a network in a format that doesn't include Mongoose-specific properties or methods.
-  // the key [transform] has a function to remove the field/key [_id] that won't be found in the resulting js object 
-  // when setting the key [getters] to "true" -> we will have the key [id] not [_id] with a string value in the resulting js object as This is because Mongoose defines a getter for the _id field by default, which returns the hexadecimal string representation of the _id.
-  // Explaing [Setting the key [getters]] -> 
-  // In Mongoose, you can define getters on your schema properties for example ->
-  // const userSchema = new mongoose.Schema({
-  //   firstName: {
-  //     type: String,
-  //     required: true
-  //   },
-  //   lastName: {
-  //     type: String,
-  //     required: true
-  //   },
-  // Virtual property for full name using a getter
-  //   fullName: {
-  //     type: String,
-  // Getter function to concatenate first and last name
-  //     get: function () {
-  //       return this.firstName + ' ' + this.lastName;
-  //     }
-  //   }
-  // });
-
-  // These getters allow you to define virtual properties or to modify the data before it's returned as part of the object. By default, Mongoose doesn't apply these getters when converting a document to a plain JavaScript object using toObject(). However, by passing { getters: true } as an option to toObject(), you instruct Mongoose to apply these getters during the conversion process.
-  // Instead, you can set the key [getters] to [true] in case converting the mongoose document to a JS object when defining the schema -> here is an example of defining a schema ->
-  // const placeSchema = new mongoose.Schema({
-  // Other properties...
-  //   title: String,
-  // }, {
-  //   toObject: { getters: true } // Ensure getters are applied when converting to JSON
-  // });
+  res.json({ place: serializeDoc(place) });
 };
 
 const getPlacesByUserId = async (req, res, next) => {
@@ -87,30 +124,50 @@ const getPlacesByUserId = async (req, res, next) => {
 
   let places;
   try {
-    places = await Place.find({ creator: userId });
+    places = await Place.find({ creator: userId })
+      .populate("creator", "name image")
+      .sort({ createdAt: -1 });
   } catch (err) {
-    const error = new HttpError(
-      'Fetching places failed, please try again later',
-      500
+    return next(
+      new HttpError("Fetching places failed, please try again later.", 500),
     );
-    return next(error);
   }
 
-  if (!places || places.length === 0) {
-    return next( // the [next] -> accepts the error object whether from the class [Error](from node) or the custom one [HttpError] extened from the class [Error](from node)
-      new HttpError('Could not find places for the provided user id.', 404)
-    );
-  }
-  res.json({ places: places.map(place => place.toObject({ getters: true, transform: (doc, ret) => { delete ret._id; } })) });
+  res.json({ places: (places || []).map(serializeDoc) });
 };
 
 const createPlace = async (req, res, next) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) { // using the method [isEmpty] provided by [express-validators] for checking the [validationResult]
-    return (next(new HttpError('Invalid inputs passed, please check your data.', 422))); // cause here working with an async code, then using [next(error)] for throwing an error not [throw new HttpError]
+  if (!errors.isEmpty()) {
+    return next(
+      new HttpError("Invalid inputs passed, please check your data.", 422),
+    );
   }
 
-  const { title, description, address } = req.body;
+  if (!req.files || req.files.length === 0) {
+    return next(
+      new HttpError(
+        "Please upload place media and include at least one image.",
+        422,
+      ),
+    );
+  }
+
+  const coverImageFile = req.files.find((file) =>
+    file.mimetype.startsWith("image/"),
+  );
+  if (!coverImageFile) {
+    return next(
+      new HttpError(
+        "Please include at least one image so the place has a cover photo.",
+        422,
+      ),
+    );
+  }
+
+  const { title, description, address, addressNotes, category, priceLevel } =
+    req.body;
+  const tags = parseTags(req.body.tags);
 
   let coordinates;
   try {
@@ -119,177 +176,215 @@ const createPlace = async (req, res, next) => {
     return next(error);
   }
 
-  if (!req.file) {
-    return next(new HttpError("Please provide an image.", 422));
-  }
-  
-  // Creating the new Place model
+  const uploadedMedia = mapUploadedMedia(req.files);
+
   const createdPlace = new Place({
-    // id: uuidv4(),  --> in the old version before using constructing DB
     title,
     description,
     address,
+    addressNotes: addressNotes || "",
+    category: category || "other",
+    priceLevel: priceLevel || "moderate",
+    tags,
     location: coordinates,
-    image: req.file.path,
-    creator: req.userData.userId // here it is the id of the user got from the object [req.body] later in the authentication part will be changed that will be got from the session of this user creating the place 
+    image: coverImageFile.path,
+    media: uploadedMedia,
+    creator: req.userData.userId,
   });
 
-  // Getting the user 
   let user;
   try {
     user = await User.findById(req.userData.userId);
   } catch (err) {
-    const error = new HttpError('Creating place failed, please try again', 500);
-    return next(error);
-  }
-  //Checking if the user is not exist, later we won't need it that after getting the user Id from the session, we will be sure about this user he is exist 
-  if (!user) {
-    const error = new HttpError('Could not find user for provided id', 404);
-    return next(error);
+    return next(new HttpError("Creating place failed, please try again.", 500));
   }
 
-  // Saving the created place and updating the user document to include the place id in the [places] field
+  if (!user) {
+    return next(new HttpError("Could not find user for provided id.", 404));
+  }
+
   try {
-    // here using [sessions & transactions] to ensure the two operations done together 
-    const sess = await mongoose.startSession(); // Sessions: Sessions in Mongoose provide a way to group multiple database operations together within a transaction. This ensures that these operations are executed as a single unit of work.
-    sess.startTransaction(); // Transactions: Transactions in MongoDB allow you to perform multiple operations on one or more collections atomically. This means either all operations succeed, or they all fail, ensuring data consistency.
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
     await createdPlace.save({ session: sess });
-    user.places.push(createdPlace); // Updating User's Places: You push the createdPlace into the user.places array. Since user.places is an array of ObjectIds referencing Place documents, Mongoose will automatically extract the _id field from createdPlace and push it into the user.places array. Only the _id field will be pushed because that's what is specified in the schema.
+    user.places.push(createdPlace);
     await user.save({ session: sess });
-    await sess.commitTransaction(); // Committing the Transaction: If all operations succeed, the transaction is committed, and the changes become permanent in the database.
+    await sess.commitTransaction();
   } catch (err) {
     console.log(err);
-    const error = new HttpError(
-      'Creating place failed, please try again.',
-      500
-    );
-    return next(error);
+    return next(new HttpError("Creating place failed, please try again.", 500));
   }
 
-  // Another Way to create a place [using queries] 
-  // try {
-  //   const createdPlace = await Place.create({
-  //     title,
-  //     description,
-  //     address,
-  //     location: coordinates,
-  //     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Empire_State_Building_%28aerial_view%29.jpg/400px-Empire_State_Building_%28aerial_view%29.jpg',
-  //     creator
-  //   });
-
-  //   console.log("Place created:", createdPlace);
-  // } catch (error) {
-  //   console.error("Error creating place:", error);
-  //   Handle error
-  // }
-
-  res.status(201).json({ place: createdPlace }); // the status code [201] -> the request was successfully fulfilled and resulted in one or possibly multiple new resources being created.
+  res.status(201).json({ place: serializeDoc(createdPlace) });
 };
 
 const updatePlace = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new HttpError('Invalid inputs passed, please check your data.', 422);
-    return next(error);
+    return next(
+      new HttpError("Invalid inputs passed, please check your data.", 422),
+    );
   }
 
-  const { title, description } = req.body;
   const placeId = req.params.pid;
 
   let place;
   try {
     place = await Place.findById(placeId);
   } catch (err) {
-    const error = new HttpError(
-      'Something went wrong, could not update place.',
-      500
+    return next(
+      new HttpError("Something went wrong, could not update place.", 500),
     );
-    return next(error);
   }
 
-  // Ensuring that the creater of the place is the person trying to edit or delete this place
-  if (place.creator.toString() !== req.userData.userId){
-    const error = new HttpError(
-      'You are not allowed to edit this place!',
-      401 // UNAUTHORIZED -> you might be authenticated, but not authorized/allowed to do this action 
+  if (!place) {
+    return next(
+      new HttpError("Could not find place for the provided id.", 404),
     );
-    return next(error);
   }
+
+  if (place.creator.toString() !== req.userData.userId) {
+    return next(new HttpError("You are not allowed to edit this place.", 403));
+  }
+
+  const { title, description, address, addressNotes, category, priceLevel } =
+    req.body;
+
+  const tags = parseTags(req.body.tags);
+  const removedMedia = parseRemovedMedia(req.body.removedMedia);
+  const existingMedia = getExistingPlaceMedia(place);
+  const keptMedia = existingMedia.filter(
+    (item) => !removedMedia.includes(item.url),
+  );
+  const newMedia = mapUploadedMedia(req.files);
+  const finalMedia = [...keptMedia, ...newMedia];
+
+  if (finalMedia.length > 8) {
+    cleanupFiles(newMedia.map((item) => item.url));
+    return next(
+      new HttpError("A place can contain at most 8 media files.", 422),
+    );
+  }
+
+  const imageMedia = finalMedia.filter((item) => item.type === "image");
+
+  if (imageMedia.length === 0) {
+    cleanupFiles(newMedia.map((item) => item.url));
+    return next(
+      new HttpError(
+        "A place must keep at least one image in its gallery.",
+        422,
+      ),
+    );
+  }
+
+  let coordinates = place.location;
+  if (address !== place.address) {
+    try {
+      coordinates = await geocodeAddress(address);
+    } catch (error) {
+      cleanupFiles(newMedia.map((item) => item.url));
+      return next(error);
+    }
+  }
+
+  const previousCoverStillExists = imageMedia.find(
+    (item) => item.url === place.image,
+  );
+  const nextCoverImage = previousCoverStillExists
+    ? previousCoverStillExists.url
+    : imageMedia[0].url;
 
   place.title = title;
   place.description = description;
+  place.address = address;
+  place.addressNotes = addressNotes || "";
+  place.category = category || "other";
+  place.priceLevel = priceLevel || "moderate";
+  place.tags = tags;
+  place.location = coordinates;
+  place.media = finalMedia;
+  place.image = nextCoverImage;
+
   try {
     await place.save();
   } catch (err) {
-    const error = new HttpError(
-      'Something went wrong, could not update place.',
-      500
+    cleanupFiles(newMedia.map((item) => item.url));
+    return next(
+      new HttpError("Something went wrong, could not save updated place.", 500),
     );
-    return next(error);
   }
 
-  res.status(200).json({ place: place.toObject({ getters: true, transform: (doc, ret) => { delete ret._id; } }) });
+  cleanupFiles(removedMedia);
+
+  res.status(200).json({ place: serializeDoc(place) });
 };
 
 const deletePlace = async (req, res, next) => {
   const placeId = req.params.pid;
 
-  // finding the place and populating the field [creator] meaning that the field [creator] will be the user entire document created this place will be deleted
   let place;
   try {
-    place = await Place.findById(placeId).populate('creator');
+    place = await Place.findById(placeId).populate("creator");
   } catch (err) {
-    // console.log(err);
-    const error = new HttpError(
-      'Something went wrong, could not delete place.',
-      500
+    return next(
+      new HttpError("Something went wrong, could not delete place.", 500),
     );
-    return next(error);
   }
 
-  // Checking if the place not exist 
-  if (!place){
-    const error = new HttpError(
-      'Place not found.',
-      404
-    );
-    return next(error);
+  if (!place) {
+    return next(new HttpError("Could not find place for this id.", 404));
   }
 
-  if (place.creator._id.toString() !== req.userData.userId) {
-    const error = new HttpError(
-      'You are not allowed to delete this place!',
-      401
+  if (place.creator.id !== req.userData.userId) {
+    return next(
+      new HttpError("You are not allowed to delete this place.", 403),
     );
-    return next(error);
   }
 
-  const imagePath = place.image;
-  
-  // deleting the place and updating the user document to pull the place id from the places array of this user  
+  let placeReviews = [];
+  try {
+    placeReviews = await Review.find({ place: placeId });
+  } catch (err) {
+    return next(
+      new HttpError(
+        "Something went wrong, could not delete place reviews.",
+        500,
+      ),
+    );
+  }
+
+  const placeMediaPaths = (place.media || []).map((item) => item.url);
+  const reviewImagePaths = placeReviews.flatMap(
+    (review) => review.images || [],
+  );
+
+  const filePaths = Array.from(
+    new Set(
+      [place.image, ...placeMediaPaths, ...reviewImagePaths].filter(Boolean),
+    ),
+  );
+
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
-    const result = await Place.deleteOne({ _id: placeId }); // [await place.remove();] -> the method [remove] is deprecated in mongoose recent versions
+    await Review.deleteMany({ place: placeId }, { session: sess });
+    await place.deleteOne({ session: sess });
     place.creator.places.pull(place);
     await place.creator.save({ session: sess });
     await sess.commitTransaction();
   } catch (err) {
-    console.log(err);
-    const error = new HttpError(
-      'Something went wrong, could not delete place.',
-      500
+    return next(
+      new HttpError("Something went wrong, could not delete place.", 500),
     );
-    return next(error);
   }
 
-  fs.unlink(imagePath, err => {
-    console.log(err);
-  });
+  cleanupFiles(filePaths);
 
-  res.status(200).json({ message: 'Place deleted successfully.' });
+  res.status(200).json({ message: "Deleted place." });
 };
 
+exports.getRecentPlaces = getRecentPlaces;
 exports.getPlaceById = getPlaceById;
 exports.getPlacesByUserId = getPlacesByUserId;
 exports.createPlace = createPlace;

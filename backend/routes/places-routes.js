@@ -1,42 +1,42 @@
-const express = require('express');
-const { check } = require('express-validator');
+const express = require("express");
+const { check } = require("express-validator");
 
-const placesControllers = require('../controllers/places-controllers');
-const fileUpload = require("../middleware/file-upload");
+const placesControllers = require("../controllers/places-controllers");
 const checkAuth = require("../middleware/check-auth");
+const mediaUpload = require("../middleware/media-upload");
 
 const router = express.Router();
 
-router.get('/:pid', placesControllers.getPlaceById);
-router.get('/user/:uid', placesControllers.getPlacesByUserId);
+router.get("/", placesControllers.getRecentPlaces);
+router.get("/user/:uid", placesControllers.getPlacesByUserId);
+router.get("/:pid", placesControllers.getPlaceById);
 
-// Securing the next routes --> 
-router.use(checkAuth); // all the routes next this are secured, then the user must be logged in to access these routes 
+router.use(checkAuth);
 
 router.post(
-  '/',
-  fileUpload.single("image"),
+  "/",
+  mediaUpload.array("media", 8),
   [
-    check('title') // In this case, check('title') specifies that the validation rules following it will apply to the title field in the request body [req.body]
-      .not()
-      .isEmpty(),
-    check('description').isLength({ min: 5 }),
-    check('address')
-      .not()
-      .isEmpty()
+    check("title").not().isEmpty(),
+    check("description").isLength({ min: 5 }),
+    check("address").not().isEmpty(),
+    check("category").not().isEmpty(),
   ],
-  placesControllers.createPlace
+  placesControllers.createPlace,
 );
+
 router.patch(
-  '/:pid',
+  "/:pid",
+  mediaUpload.array("media", 8),
   [
-    check('title')
-      .not()
-      .isEmpty(),
-    check('description').isLength({ min: 5 })
+    check("title").not().isEmpty(),
+    check("description").isLength({ min: 5 }),
+    check("address").not().isEmpty(),
+    check("category").not().isEmpty(),
   ],
-  placesControllers.updatePlace
+  placesControllers.updatePlace,
 );
-router.delete('/:pid', placesControllers.deletePlace);
+
+router.delete("/:pid", placesControllers.deletePlace);
 
 module.exports = router;

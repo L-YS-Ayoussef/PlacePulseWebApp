@@ -1,0 +1,52 @@
+.multi-select-dropdown {
+  margin-bottom: 1rem;
+}
+
+.multi-select-dropdown label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #595959;
+}
+
+.multi-select-dropdown__trigger {
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  font: inherit;
+}
+
+.multi-select-dropdown__menu {
+  margin-top: 0.35rem;
+  border: 1px solid #ccc;
+  background: white;
+  max-height: 14rem;
+  overflow: auto;
+  padding: 0.5rem;
+}
+
+.multi-select-dropdown__option {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: normal !important;
+}
+
+.multi-select-dropdown__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.multi-select-dropdown__chip {
+  background: #f1ecdc;
+  color: #545454;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+}

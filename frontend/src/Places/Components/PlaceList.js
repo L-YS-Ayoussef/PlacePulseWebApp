@@ -1,11 +1,11 @@
-import React from 'react';
+import React from "react";
 
-import Card from '../../Shared/Components/UIElement/Card';
-import Button from '../../Shared/Components/FormElements/Button';
-import PlaceItem from './PlaceItem';
-import './PlaceList.css';
+import Card from "../../Shared/Components/UIElement/Card";
+import Button from "../../Shared/Components/FormElements/Button";
+import PlaceItem from "./PlaceItem";
+import "./PlaceList.css";
 
-const PlaceList = props => {
+const PlaceList = (props) => {
   if (props.items.length === 0) {
     return (
       <div className="place-list center">
@@ -19,19 +19,30 @@ const PlaceList = props => {
 
   return (
     <ul className="place-list">
-      {props.items.map(place => (
-        <PlaceItem
-          key={place.id}
-          id={place.id}
-          image={place.image}
-          title={place.title}
-          description={place.description}
-          address={place.address}
-          creatorId={place.creator}
-          coordinates={place.location}
-          onDelete={props.onDeletePlace}
-        />
-      ))}
+      {props.items.map((place) => {
+        const creatorId =
+          typeof place.creator === "object" ? place.creator.id : place.creator;
+        const creatorName =
+          typeof place.creator === "object" ? place.creator.name : "";
+
+        return (
+          <PlaceItem
+            key={place.id}
+            id={place.id}
+            image={place.image}
+            title={place.title}
+            description={place.description}
+            address={place.address}
+            creatorId={creatorId}
+            creatorName={creatorName}
+            coordinates={place.location}
+            averageRating={place.averageRating}
+            reviewCount={place.reviewCount}
+            reviewImagesCount={place.reviewImagesCount}
+            onDelete={props.onDeletePlace}
+          />
+        );
+      })}
     </ul>
   );
 };

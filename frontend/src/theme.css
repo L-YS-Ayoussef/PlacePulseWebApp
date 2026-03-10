@@ -1,0 +1,224 @@
+:root {
+  --bg: #f7f4ef;
+  --surface: #fffdfa;
+  --surface-alt: #f4ede4;
+  --text: #1f2937;
+  --text-muted: #6b7280;
+  --border: #e5dacb;
+
+  --primary: #c56a3d;
+  --primary-strong: #a9552d;
+  --primary-soft: #fff1e8;
+
+  --accent: #2d7d7a;
+
+  --danger: #c2410c;
+  --danger-strong: #9a3412;
+
+  --chip-bg: #fdf0e6;
+  --chip-text: #9a4d21;
+
+  --overlay: rgba(2, 6, 23, 0.82);
+  --shadow: 0 12px 30px rgba(61, 47, 31, 0.1);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+main {
+  background: transparent;
+}
+
+/* Shared surfaces */
+.card,
+.place-form,
+.review-form,
+.place-details__gallery-card,
+.place-details__notice,
+.review-list__empty {
+  background: var(--surface) !important;
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* Header / nav */
+.main-header {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.main-navigation__title a {
+  color: var(--text);
+}
+
+.nav-links a,
+.nav-links button {
+  color: var(--text);
+  background: transparent;
+}
+
+.nav-links a:hover,
+.nav-links a:active,
+.nav-links a.active,
+.nav-links button:hover,
+.nav-links button:active {
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+/* Buttons */
+.button {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.button:hover,
+.button:active {
+  background: var(--primary-strong);
+  border-color: var(--primary-strong);
+}
+
+.button--inverse {
+  background: var(--surface);
+  color: var(--primary);
+  border-color: var(--border);
+}
+
+.button--inverse:hover,
+.button--inverse:active {
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+  border-color: var(--primary);
+}
+
+.button--danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: white;
+}
+
+.button--danger:hover,
+.button--danger:active {
+  background: var(--danger-strong);
+  border-color: var(--danger-strong);
+}
+
+/* Inputs */
+.form-control label,
+.place-form__field label,
+.multi-select-dropdown label {
+  color: var(--text);
+}
+
+.form-control input,
+.form-control textarea,
+.place-form__field select,
+.multi-select-dropdown__trigger {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.form-control input:focus,
+.form-control textarea:focus,
+.place-form__field select:focus,
+.multi-select-dropdown__trigger:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-control--invalid input,
+.form-control--invalid textarea {
+  border-color: var(--danger);
+}
+
+.form-control--invalid p,
+.place-form__field p,
+.place-form__media-error {
+  color: var(--danger);
+}
+
+/* Dropdowns */
+.multi-select-dropdown__menu {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.multi-select-dropdown__chip,
+.place-details__chip,
+.review-item__tag {
+  background: var(--chip-bg);
+  color: var(--chip-text);
+}
+
+/* Upload zones */
+.media-upload__preview-grid,
+.images-upload__preview-grid {
+  background: var(--surface-alt);
+  border-color: var(--border);
+}
+
+.media-upload__remove-btn,
+.images-upload__remove-btn,
+.place-form__remove-media {
+  background: rgba(15, 23, 42, 0.72);
+}
+
+/* Modal */
+.modal__content,
+.modal__header,
+.modal__footer {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.backdrop {
+  background: var(--overlay);
+}
+
+/* Links inside place cards/details */
+.place-item__creator a,
+.place-details__creator a {
+  color: var(--primary);
+}
+
+/* Muted text */
+.place-item__rating-meta,
+.place-details__address,
+.place-details__creator,
+.review-item__author p,
+.star-rating__value,
+.place-form__hint,
+.images-upload__empty,
+.media-upload__empty {
+  color: var(--text-muted);
+}
+
+/* Review tags */
+.review-form__tag {
+  background: var(--surface-alt);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.review-form__tag--active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+/* Stars */
+.star-rating__star {
+  color: #cbd5e1;
+}
+
+.star-rating__star--filled {
+  color: #f59e0b;
+}

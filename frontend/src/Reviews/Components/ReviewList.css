@@ -1,0 +1,46 @@
+.review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.review-list__empty {
+  text-align: center;
+  padding: 1rem;
+}
+
+.review-item__gallery-image {
+  cursor: pointer;
+}
+
+.review-item__viewer-modal {
+  top: 5vh !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: min(92vw, 48rem) !important;
+  max-width: 48rem;
+}
+
+.review-item__viewer-header {
+  padding: 1rem 1.25rem;
+}
+
+.review-item__viewer-content {
+  padding: 0 !important;
+}
+
+.review-item__viewer-stage {
+  width: 100%;
+  max-height: 68vh;
+  background: #020617;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.review-item__viewer-stage img {
+  width: 100%;
+  max-height: 68vh;
+  object-fit: contain;
+  display: block;
+}
