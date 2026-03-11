@@ -20,6 +20,7 @@ import { useHttpClient } from "../../Shared/hooks/http-hook";
 import { AuthContext } from "../../Shared/context/auth-context";
 import { formatDate } from "../../Shared/util/date";
 import { shareUrl } from "../../Shared/util/share";
+import PlaceInsightsPanel from "../../AI/Components/PlaceInsightsPanel";
 import "./PlaceDetails.css";
 
 const getPlaceMedia = (place) => {
@@ -54,6 +55,24 @@ const PlaceDetails = () => {
   const [galleryAnimationDirection, setGalleryAnimationDirection] =
     useState("next");
 
+  const [placeInsight, setPlaceInsight] = useState(null);
+  const [insightLoading, setInsightLoading] = useState(false);
+  const [askingAiQuestion, setAskingAiQuestion] = useState(false);
+
+  const fetchPlaceInsight = useCallback(async () => {
+    setInsightLoading(true);
+
+    try {
+      const responseData = await sendRequest(
+        `http://localhost:5000/api/place-insights/place/${placeId}`,
+      );
+      setPlaceInsight(responseData.insight);
+    } catch (err) {
+    } finally {
+      setInsightLoading(false);
+    }
+  }, [placeId, sendRequest]);
+  
   const fetchPlaceDetails = useCallback(async () => {
     const placeResponse = await sendRequest(
       `http://localhost:5000/api/places/${placeId}`,
@@ -67,8 +86,15 @@ const PlaceDetails = () => {
   }, [placeId, sendRequest]);
 
   useEffect(() => {
-    fetchPlaceDetails().catch(() => {});
-  }, [fetchPlaceDetails]);
+    const loadPage = async () => {
+      try {
+        await fetchPlaceDetails();
+        await fetchPlaceInsight();
+      } catch (err) {}
+    };
+
+    loadPage();
+  }, [fetchPlaceDetails, fetchPlaceInsight]);
 
   const userAlreadyReviewed = useMemo(
     () => reviews.some((review) => review.creator.id === auth.userId),
@@ -162,6 +188,7 @@ const PlaceDetails = () => {
         },
       );
       await fetchPlaceDetails();
+      await fetchPlaceInsight();
     } catch (err) {}
   };
 
@@ -196,6 +223,7 @@ const PlaceDetails = () => {
       );
       setEditingReview(null);
       await fetchPlaceDetails();
+      await fetchPlaceInsight();
     } catch (err) {}
   };
 
@@ -215,7 +243,29 @@ const PlaceDetails = () => {
       }
 
       await fetchPlaceDetails();
+      await fetchPlaceInsight();
     } catch (err) {}
+  };
+
+  const askPlaceQuestionHandler = async (question) => {
+    setAskingAiQuestion(true);
+
+    try {
+      const responseData = await sendRequest(
+        `http://localhost:5000/api/place-insights/place/${placeId}/ask`,
+        "POST",
+        JSON.stringify({ question }),
+        {
+          "Content-Type": "application/json",
+        },
+      );
+
+      return responseData.answer;
+    } catch (err) {
+      return null;
+    } finally {
+      setAskingAiQuestion(false);
+    }
   };
 
   const sharePlaceHandler = async () => {
@@ -439,6 +489,15 @@ const PlaceDetails = () => {
               )}
             </Card>
           )}
+
+          <div className="place-details__ai-section">
+            <PlaceInsightsPanel
+              insight={placeInsight}
+              isLoading={insightLoading}
+              asking={askingAiQuestion}
+              onAskQuestion={askPlaceQuestionHandler}
+            />
+          </div>
 
           {auth.isLoggedIn && editingReview && (
             <ReviewForm

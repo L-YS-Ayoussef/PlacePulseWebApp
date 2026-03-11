@@ -8,6 +8,7 @@ const Place = require("../models/place");
 const Review = require("../models/review");
 const User = require("../models/user");
 const Collection = require("../models/collection");
+const { deletePlaceInsight } = require("../util/place-insights-ai");
 
 const serializeDoc = (doc) =>
   doc.toObject({ getters: true, versionKey: false });
@@ -391,6 +392,7 @@ const deletePlace = async (req, res, next) => {
   }
 
   cleanupFiles(filePaths);
+  await deletePlaceInsight(placeId);
 
   res.status(200).json({ message: "Deleted place." });
 };

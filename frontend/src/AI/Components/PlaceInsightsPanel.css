@@ -1,0 +1,125 @@
+.place-insights {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+}
+
+.place-insights__header {
+  margin-bottom: 1rem;
+}
+
+.place-insights__header h2 {
+  margin: 0 0 0.35rem;
+  color: var(--text);
+}
+
+.place-insights__header p,
+.place-insights__empty,
+.place-insights__ask-actions span {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.place-insights__loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 10rem;
+}
+
+.place-insights__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+
+.place-insights__section {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-alt);
+}
+
+.place-insights__section h3,
+.place-insights__questions h3,
+.place-insights__answer-box h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+
+.place-insights__section p,
+.place-insights__answer-box p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.65;
+}
+
+.place-insights__list {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: var(--text);
+}
+
+.place-insights__list li + li {
+  margin-top: 0.45rem;
+}
+
+.place-insights__questions {
+  margin-top: 1.25rem;
+}
+
+.place-insights__preset-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.place-insights__ask-form {
+  margin-top: 1.25rem;
+}
+
+.place-insights__ask-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.place-insights__ask-form textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 5.25rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font: inherit;
+  color: var(--text);
+  background: #fff;
+}
+
+.place-insights__ask-actions {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.place-insights__answer-box {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.place-insights__basis {
+  margin-top: 0.9rem;
+}
+
+.place-insights__basis strong {
+  display: inline-block;
+  margin-bottom: 0.45rem;
+  color: var(--text);
+}

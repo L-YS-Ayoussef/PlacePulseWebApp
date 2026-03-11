@@ -5,6 +5,7 @@ const HttpError = require("../models/http-error");
 const Place = require("../models/place");
 const Review = require("../models/review");
 const recalculatePlaceReviewStats = require("../util/place-review-stats");
+const { markPlaceInsightStale } = require("../util/place-insights-ai");
 
 const parseRecommendedFor = (recommendedFor) => {
   if (!recommendedFor) {
@@ -122,6 +123,7 @@ const createReview = async (req, res, next) => {
   try {
     await createdReview.save();
     await recalculatePlaceReviewStats(placeId);
+    await markPlaceInsightStale(placeId);
   } catch (err) {
     console.log(err);
     return next(
@@ -201,6 +203,7 @@ const updateReview = async (req, res, next) => {
   try {
     await review.save();
     await recalculatePlaceReviewStats(review.place);
+    await markPlaceInsightStale(review.place);
   } catch (err) {
     return next(
       new HttpError("Updating review failed, please try again.", 500),
@@ -256,6 +259,7 @@ const deleteReview = async (req, res, next) => {
   try {
     await review.deleteOne();
     await recalculatePlaceReviewStats(placeId);
+    await markPlaceInsightStale(placeId);
   } catch (err) {
     return next(
       new HttpError("Something went wrong, could not delete review.", 500),
