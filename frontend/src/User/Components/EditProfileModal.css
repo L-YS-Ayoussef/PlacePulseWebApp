@@ -1,0 +1,27 @@
+.edit-profile-modal {
+  width: min(92vw, 48rem) !important;
+  max-width: 48rem;
+  max-height: 90vh !important;
+  overflow: hidden !important;
+}
+
+.edit-profile-modal__content {
+  padding: 0.5rem 1.25rem 0 1.25rem !important;
+  overflow: visible !important;
+}
+
+.edit-profile-modal__content .form-control:first-child {
+  margin-top: 0 !important;
+}
+
+.edit-profile-modal__content .form-control {
+  margin-bottom: 1rem;
+}
+
+.edit-profile-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0 1.25rem 1.25rem 1.25rem !important;
+}

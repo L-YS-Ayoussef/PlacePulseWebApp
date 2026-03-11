@@ -6,9 +6,11 @@ import NewPlace from "./Places/Pages/NewPlaces";
 import UpdatePlace from "./Places/Pages/UpdatePlace";
 import UserPlaces from "./Places/Pages/UserPlaces";
 import PlaceDetails from "./Reviews/Pages/PlaceDetails";
+import SharedCollection from "./Collections/Pages/SharedCollection";
 import MainNavigation from "./Shared/Components/Navigation/MainNavigation";
 import NotFound from "./Notfound";
 import Auth from "./User/Pages/Auth";
+import UserCollection from "./Collections/Pages/UserCollection";
 
 import { AuthContext } from "./Shared/context/auth-context";
 import { useAuth } from "./Shared/hooks/auth-hook";
@@ -26,6 +28,11 @@ const App = () => {
         <Route path="/places/new" element={<NewPlace />} />
         <Route path="/places/:placeId" element={<UpdatePlace />} />
         <Route path="/places/:placeId/details" element={<PlaceDetails />} />
+        <Route
+          path="/collections/shared/:shareToken"
+          element={<SharedCollection />}
+        />
+        <Route path="/collections/:collectionId" element={<UserCollection />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     );
@@ -35,6 +42,10 @@ const App = () => {
         <Route path="/" element={<RecentPlaces />} />
         <Route path="/:userId/places" element={<UserPlaces />} />
         <Route path="/places/:placeId/details" element={<PlaceDetails />} />
+        <Route
+          path="/collections/shared/:shareToken"
+          element={<SharedCollection />}
+        />
         <Route path="/auth" element={<Auth />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

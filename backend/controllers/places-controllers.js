@@ -7,6 +7,7 @@ const geocodeAddress = require("../util/location");
 const Place = require("../models/place");
 const Review = require("../models/review");
 const User = require("../models/user");
+const Collection = require("../models/collection");
 
 const serializeDoc = (doc) =>
   doc.toObject({ getters: true, versionKey: false });
@@ -368,10 +369,20 @@ const deletePlace = async (req, res, next) => {
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
+
     await Review.deleteMany({ place: placeId }, { session: sess });
+
+    await Collection.updateMany(
+      {},
+      { $pull: { places: place._id } },
+      { session: sess },
+    );
+
     await place.deleteOne({ session: sess });
+
     place.creator.places.pull(place);
     await place.creator.save({ session: sess });
+
     await sess.commitTransaction();
   } catch (err) {
     return next(

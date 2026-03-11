@@ -1,0 +1,42 @@
+.user-collection-page {
+  width: 100%;
+}
+
+.user-collection-page__header {
+  width: 90%;
+  max-width: 72rem;
+  margin: 6rem auto 1.5rem;
+  padding: 1.25rem;
+}
+
+.user-collection-page__header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.user-collection-page__header-top h1 {
+  margin: 0 0 0.25rem;
+  color: var(--text);
+}
+
+.user-collection-page__header-top p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.user-collection-page__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.user-collection-page__heading {
+  width: 90%;
+  max-width: 72rem;
+  margin: 0 auto 1rem;
+  text-align: center;
+  color: var(--text);
+}

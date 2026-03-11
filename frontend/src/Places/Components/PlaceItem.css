@@ -1,3 +1,37 @@
+.place-item {
+  margin-bottom: 1.25rem;
+  height: 100%;
+}
+
+.place-item__content {
+  overflow: hidden;
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.place-item__image {
+  width: 100%;
+  height: 16rem;
+  overflow: hidden;
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+}
+
+.place-item__image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.place-item__info {
+  padding: 1.1rem 1.1rem 0.25rem;
+  flex: 1;
+}
+
 .place-item__rating-row {
   display: flex;
   justify-content: center;
@@ -10,6 +44,18 @@
 .place-item__rating-meta {
   font-size: 0.9rem;
   color: #5f5b48;
+}
+
+.place-item__info h2 {
+  margin: 0 0 0.45rem;
+  color: var(--text);
+}
+
+.place-item__info h3 {
+  margin: 0 0 0.65rem;
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 .place-item__creator {
@@ -29,23 +75,55 @@
   text-decoration: underline;
 }
 
-.place-item__image {
-  width: 100%;
-  height: 16rem;
-  overflow: hidden;
-  background: var(--surface-alt);
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 20px;
+.place-item__dates {
+  margin: 0.35rem 0 0.9rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
 }
 
-.place-item__image img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  object-position: center;
+.place-item__info p:last-child {
+  margin-top: 0;
+  color: var(--text);
+  line-height: 1.65;
 }
 
-.place-item {
-  margin-bottom: 20px;
+.place-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0 1.1rem 1.15rem;
+  margin-top: auto;
+}
+
+.place-item__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.place-item__actions-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.05rem;
+}
+
+.place-item__actions-group--right {
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .place-item__actions-group--right {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .place-item__image {
+    height: 13.5rem;
+  }
+
+  .place-item__actions {
+    gap: 0.6rem;
+  }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 
 import Card from "../../Shared/Components/UIElement/Card";
@@ -8,16 +8,25 @@ import MapModal2 from "../../Shared/Components/UIElement/Map2";
 import ErrorModal from "../../Shared/Components/UIElement/ErrorModal";
 import LoadingSpinner from "../../Shared/Components/UIElement/LoadingSpinner";
 import StarRating from "../../Reviews/Components/StarRating";
-
+import SaveToCollectionModal from "../../Collections/Components/SaveToCollectionModal";
 import { useHttpClient } from "../../Shared/hooks/http-hook";
 import { AuthContext } from "../../Shared/context/auth-context";
+import { formatDate } from "../../Shared/util/date";
+import { shareUrl } from "../../Shared/util/share";
 import "./PlaceItem.css";
 
 const PlaceItem = (props) => {
   const auth = useContext(AuthContext);
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
+
   const [showMap, setShowMap] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+
+  const showOwnerActions =
+    !props.hideOwnerActions && auth.userId === props.creatorId;
+
+  const hasCustomSaveAction = typeof props.onSavePlace === "function";
 
   const openMap = () => setShowMap(true);
   const closeMap = () => setShowMap(false);
@@ -32,6 +41,7 @@ const PlaceItem = (props) => {
 
   const confirmDeleteHandler = async () => {
     setShowConfirmModal(false);
+
     try {
       await sendRequest(
         `http://localhost:5000/api/places/${props.id}`,
@@ -41,13 +51,44 @@ const PlaceItem = (props) => {
           authorization: `Cameleon ${auth.token}`,
         },
       );
-      props.onDelete(props.id);
+
+      if (props.onDelete) {
+        props.onDelete(props.id);
+      }
     } catch (err) {}
+  };
+
+  const sharePlaceHandler = async () => {
+    try {
+      await shareUrl({
+        title: props.title,
+        text: props.description,
+        url: `${window.location.origin}/places/${props.id}/details`,
+      });
+    } catch (err) {}
+  };
+
+  const saveHandler = () => {
+    if (hasCustomSaveAction) {
+      props.onSavePlace(props.id);
+      return;
+    }
+
+    setShowSaveModal(true);
   };
 
   return (
     <React.Fragment>
       <ErrorModal error={error} onClear={clearError} />
+
+      {auth.isLoggedIn && !hasCustomSaveAction && (
+        <SaveToCollectionModal
+          show={showSaveModal}
+          onCancel={() => setShowSaveModal(false)}
+          placeId={props.id}
+          placeTitle={props.title}
+        />
+      )}
 
       <Modal
         show={showMap}
@@ -87,6 +128,7 @@ const PlaceItem = (props) => {
       <li className="place-item">
         <Card className="place-item__content">
           {isLoading && <LoadingSpinner asOverlay />}
+
           <div className="place-item__image">
             <img
               src={`http://localhost:5000/${props.image}`}
@@ -119,21 +161,41 @@ const PlaceItem = (props) => {
               </p>
             )}
 
+            <p className="place-item__dates">
+              Created: {formatDate(props.createdAt)} · Updated:{" "}
+              {formatDate(props.updatedAt)}
+            </p>
+
             <p>{props.description}</p>
           </div>
 
           <div className="place-item__actions">
-            <Button inverse onClick={openMap}>
-              VIEW ON MAP
-            </Button>
-            <Button to={`/places/${props.id}/details`}>EXPERIENCES</Button>
-            {auth.userId === props.creatorId && (
-              <Button to={`/places/${props.id}`}>EDIT</Button>
-            )}
-            {auth.userId === props.creatorId && (
-              <Button danger onClick={showDeleteWarningHandler}>
-                DELETE
+            <div className="place-item__actions-group">
+              <Button inverse onClick={openMap}>
+                VIEW ON MAP
               </Button>
+
+              <Button to={`/places/${props.id}/details`}>EXPERIENCES</Button>
+
+              {auth.isLoggedIn && (
+                <Button inverse onClick={saveHandler}>
+                  {props.saveButtonText || "SAVE"}
+                </Button>
+              )}
+
+              <Button inverse onClick={sharePlaceHandler}>
+                SHARE
+              </Button>
+            </div>
+
+            {showOwnerActions && (
+              <div className="place-item__actions-group place-item__actions-group--right">
+                <Button to={`/places/${props.id}`}>EDIT</Button>
+
+                <Button danger onClick={showDeleteWarningHandler}>
+                  DELETE
+                </Button>
+              </div>
             )}
           </div>
         </Card>

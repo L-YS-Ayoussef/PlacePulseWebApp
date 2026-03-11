@@ -5,8 +5,8 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { useParams } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+
 import Card from "../../Shared/Components/UIElement/Card";
 import ErrorModal from "../../Shared/Components/UIElement/ErrorModal";
 import LoadingSpinner from "../../Shared/Components/UIElement/LoadingSpinner";
@@ -15,8 +15,11 @@ import Button from "../../Shared/Components/FormElements/Button";
 import ReviewForm from "../Components/ReviewForm";
 import ReviewList from "../Components/ReviewList";
 import StarRating from "../Components/StarRating";
+import SaveToCollectionModal from "../../Collections/Components/SaveToCollectionModal";
 import { useHttpClient } from "../../Shared/hooks/http-hook";
 import { AuthContext } from "../../Shared/context/auth-context";
+import { formatDate } from "../../Shared/util/date";
+import { shareUrl } from "../../Shared/util/share";
 import "./PlaceDetails.css";
 
 const getPlaceMedia = (place) => {
@@ -43,6 +46,7 @@ const PlaceDetails = () => {
   const [place, setPlace] = useState();
   const [reviews, setReviews] = useState([]);
   const [editingReview, setEditingReview] = useState(null);
+  const [showSaveModal, setShowSaveModal] = useState(false);
 
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const [viewerItem, setViewerItem] = useState(null);
@@ -137,7 +141,6 @@ const PlaceDetails = () => {
     changeGalleryItemHandler("next");
   };
 
-  
   const createReviewHandler = async (reviewData) => {
     const formData = new FormData();
     formData.append("rating", reviewData.rating);
@@ -215,6 +218,20 @@ const PlaceDetails = () => {
     } catch (err) {}
   };
 
+  const sharePlaceHandler = async () => {
+    if (!place) {
+      return;
+    }
+
+    try {
+      await shareUrl({
+        title: place.title,
+        text: place.description,
+        url: `${window.location.origin}/places/${placeId}/details`,
+      });
+    } catch (err) {}
+  };
+
   if (isLoading && !place) {
     return (
       <div className="center">
@@ -236,6 +253,15 @@ const PlaceDetails = () => {
   return (
     <React.Fragment>
       <ErrorModal error={error} onClear={clearError} />
+
+      {auth.isLoggedIn && place && (
+        <SaveToCollectionModal
+          show={showSaveModal}
+          onCancel={() => setShowSaveModal(false)}
+          placeId={placeId}
+          placeTitle={place.title}
+        />
+      )}
 
       <Modal
         show={!!viewerItem}
@@ -313,6 +339,7 @@ const PlaceDetails = () => {
                     : ""}
                 </span>
               </div>
+
               {place.creator && place.creator.name && (
                 <p className="place-details__creator">
                   Added by{" "}
@@ -321,6 +348,22 @@ const PlaceDetails = () => {
                   </Link>
                 </p>
               )}
+
+              <p className="place-details__dates">
+                Created: {formatDate(place.createdAt)} · Updated:{" "}
+                {formatDate(place.updatedAt)}
+              </p>
+
+              <div className="place-details__summary-actions">
+                {auth.isLoggedIn && (
+                  <Button inverse onClick={() => setShowSaveModal(true)}>
+                    SAVE
+                  </Button>
+                )}
+                <Button inverse onClick={sharePlaceHandler}>
+                  SHARE
+                </Button>
+              </div>
 
               <p className="place-details__description">{place.description}</p>
             </div>

@@ -17,8 +17,12 @@ const PlaceList = (props) => {
     );
   }
 
+  const listClasses = `place-list ${
+    props.layout === "grid" ? "place-list--grid" : "place-list--list"
+  }`;
+
   return (
-    <ul className="place-list">
+    <ul className={listClasses}>
       {props.items.map((place) => {
         const creatorId =
           typeof place.creator === "object" ? place.creator.id : place.creator;
@@ -39,6 +43,11 @@ const PlaceList = (props) => {
             averageRating={place.averageRating}
             reviewCount={place.reviewCount}
             reviewImagesCount={place.reviewImagesCount}
+            createdAt={place.createdAt}
+            updatedAt={place.updatedAt}
+            hideOwnerActions={props.hideOwnerActions}
+            saveButtonText={props.saveButtonText}
+            onSavePlace={props.onSavePlace}
             onDelete={props.onDeletePlace}
           />
         );

@@ -3,5 +3,22 @@
   margin: 1rem auto;
   padding: 0;
   width: 90%;
-  max-width: 40rem;
+  max-width: 72rem;
+}
+
+.place-list--list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.place-list--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.place-list--grid .place-item {
+  margin: 0;
 }

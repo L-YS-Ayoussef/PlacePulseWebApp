@@ -1,0 +1,95 @@
+.user-profile-page {
+  width: 100%;
+}
+
+.user-profile-page__overview-card {
+  width: 90%;
+  max-width: 72rem;
+  margin: 6rem auto 1.5rem;
+  padding: 1.25rem;
+}
+
+.user-profile-page__divider {
+  margin: 1.25rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.user-profile-page__collections {
+  width: 100%;
+}
+
+.user-profile-page__collections-header {
+  margin-bottom: 1rem;
+}
+
+.user-profile-page__collections-header h2 {
+  margin: 0 0 0.25rem;
+  color: var(--text);
+}
+
+.user-profile-page__collections-header p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.user-profile-page__collections-empty {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.user-profile-page__collection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.user-profile-page__collection-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-alt);
+}
+
+.user-profile-page__collection-item h3 {
+  margin: 0 0 0.2rem;
+}
+
+.user-profile-page__collection-item h3 a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.user-profile-page__collection-item h3 a:hover,
+.user-profile-page__collection-item h3 a:active {
+  text-decoration: underline;
+}
+
+.user-profile-page__collection-item p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.user-profile-page__collection-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.user-profile-page__places-heading {
+  margin: 0 auto 1rem;
+  width: 90%;
+  max-width: 72rem;
+  text-align: center;
+  color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .user-profile-page__collection-item {
+    align-items: flex-start;
+  }
+}

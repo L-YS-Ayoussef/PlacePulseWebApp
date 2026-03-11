@@ -3,24 +3,106 @@ const { v4: uuidv4 } = require('uuid');
 const { validationResult } = require('express-validator');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
 
 const HttpError = require('../models/http-error');
 const User = require('../models/user');
 
 
-const getUsers = async (req, res, next) => {
-  let users;
+const serializeUser = (user) =>
+  user.toObject({
+    getters: true,
+    versionKey: false,
+    transform: (doc, ret) => {
+      delete ret.password;
+      delete ret._id;
+      return ret;
+    },
+});
+
+const getUserById = async (req, res, next) => {
+  const userId = req.params.uid;
+
+  let user;
   try {
-    users = await User.find({}, '-password'); // adding "minus" before the field [password] that i don't want this field in the returned documents
+    user = await User.findById(userId, "-password");
   } catch (err) {
-    const error = new HttpError(
-      'Fetching users failed, please try again later.',
-      500
+    return next(
+      new HttpError("Fetching user failed, please try again later.", 500),
     );
-    return next(error);
   }
-  res.json({ users: users.map(user => user.toObject({ getters: true, transform: (doc, ret) => { delete ret._id; } })) });
+
+  if (!user) {
+    return next(new HttpError("Could not find user for the provided id.", 404));
+  }
+
+  res.json({ user: serializeUser(user) });
 };
+
+const updateProfile = async (req, res, next) => {
+  const userId = req.params.uid;
+
+  if (req.userData.userId !== userId) {
+    return next(
+      new HttpError("You are not allowed to edit this profile.", 403),
+    );
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(
+      new HttpError("Invalid inputs passed, please check your data.", 422),
+    );
+  }
+
+  let user;
+  try {
+    user = await User.findById(userId);
+  } catch (err) {
+    return next(
+      new HttpError("Updating profile failed, please try again later.", 500),
+    );
+  }
+
+  if (!user) {
+    return next(new HttpError("Could not find user for the provided id.", 404));
+  }
+
+  const oldImage = user.image;
+
+  user.name = req.body.name || user.name;
+  if (req.file) {
+    user.image = req.file.path;
+  }
+
+  try {
+    await user.save();
+  } catch (err) {
+    return next(new HttpError("Could not save updated profile.", 500));
+  }
+
+  if (req.file && oldImage && oldImage !== user.image) {
+    fs.unlink(oldImage, (err) => {
+      if (err) console.log(err);
+    });
+  }
+
+  res.status(200).json({ user: serializeUser(user) });
+};
+
+// const getUsers = async (req, res, next) => {
+//   let users;
+//   try {
+//     users = await User.find({}, '-password'); // adding "minus" before the field [password] that i don't want this field in the returned documents
+//   } catch (err) {
+//     const error = new HttpError(
+//       'Fetching users failed, please try again later.',
+//       500
+//     );
+//     return next(error);
+//   }
+//   res.json({ users: users.map(user => user.toObject({ getters: true, transform: (doc, ret) => { delete ret._id; } })) });
+// };
 
 const signup = async (req, res, next) => {
   const errors = validationResult(req);
@@ -167,6 +249,8 @@ const login = async (req, res, next) => {
   res.json({ userId: existingUser.id, email: existingUser.email, token: token });
 };
 
-exports.getUsers = getUsers;
+// exports.getUsers = getUsers;
 exports.signup = signup;
 exports.login = login;
+exports.getUserById = getUserById;
+exports.updateProfile = updateProfile;

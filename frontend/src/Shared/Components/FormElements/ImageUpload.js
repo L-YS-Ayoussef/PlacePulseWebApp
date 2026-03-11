@@ -6,13 +6,15 @@ import "./ImageUpload.css";
 const ImageUpload = (props) => {
   const filePickerRef = useRef();
   const [file, setFile] = useState();
-  const [previewUrl, setPreviewUrl] = useState();
-  const [isValid, setIsValid] = useState(!props.required);
+  const [previewUrl, setPreviewUrl] = useState(props.initialImage || null);
+  const [isValid, setIsValid] = useState(
+    props.initialImage ? true : !props.required,
+  );
   const [isDragActive, setIsDragActive] = useState(false);
 
   useEffect(() => {
     if (!file) {
-      setPreviewUrl(null);
+      setPreviewUrl(props.initialImage || null);
       return;
     }
 
@@ -21,7 +23,7 @@ const ImageUpload = (props) => {
       setPreviewUrl(fileReader.result);
     };
     fileReader.readAsDataURL(file);
-  }, [file]);
+  }, [file, props.initialImage]);
 
   const applyPickedFile = (pickedFile) => {
     if (!pickedFile) {
@@ -68,8 +70,8 @@ const ImageUpload = (props) => {
     setIsDragActive(false);
 
     const droppedFiles = Array.from(event.dataTransfer.files || []);
-    const pickedFile = droppedFiles.find((file) =>
-      file.type.startsWith("image/"),
+    const pickedFile = droppedFiles.find((item) =>
+      item.type.startsWith("image/"),
     );
 
     applyPickedFile(pickedFile);
