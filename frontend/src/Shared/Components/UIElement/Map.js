@@ -10,7 +10,7 @@ import Control from 'ol/control/Control.js';
 import './Map.css';
 
 const MapModal = props => {
-    const mapRef = useRef(); // to create a reference using the hook [useRef]
+    const mapRef = useRef();
 
     const { center, zoom } = props;
 
@@ -19,7 +19,7 @@ const MapModal = props => {
             target: mapRef.current.id,
             layers: [
                 new TileLayer({
-                    source: new OSM()  // OpenStreetMap --> OSM
+                    source: new OSM()
                 })
             ],
             view: new View({
@@ -27,18 +27,6 @@ const MapModal = props => {
                 zoom: zoom
             })
         });
-
-        
-        // // Create a custom attribution control
-        // const customAttribution = new Control({
-        //     element: document.createElement('div'),
-        // });
-
-        // customAttribution.element.innerHTML =
-        //     '&copy; NodeSprint 2023'; // Replace with your own attribution information
-
-        // // Add the custom attribution to the map
-        // map.addControl(customAttribution);
     }, [center, zoom]);
 
     return (

@@ -89,7 +89,7 @@ const Auth = () => {
       }
     } else {
       try {
-        const formData = new FormData() // it is a browser API, and the object "formData", we can add the both normal text data and file data which is binary data 
+        const formData = new FormData()
         formData.append("name", formState.inputs.name.value);
         formData.append("email", formState.inputs.email.value);
         formData.append("password", formState.inputs.password.value);
@@ -98,7 +98,7 @@ const Auth = () => {
         const responseData = await sendRequest(
           'http://localhost:5000/api/users/signup',
           'POST',
-          formData // the "fetch" method/API automatically adds the right headers for the formData 
+          formData
         );
 
         auth.login(responseData.userId, responseData.token);

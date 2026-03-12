@@ -44,10 +44,8 @@ const MainNavigation = props => {
         </nav>
       </MainHeader>
     </React.Fragment>
-  ); // using [React.Fragment] -> cause you can't return two components side by side, then [React.Fragment] represents a component containing two side by side component
+  );
 };
-// Notes --> 
-//  1) [Backdrop, SideDrawer] are portals(outside the DOM), the [SideDrawer] layer is above [Backdrop] according to the "z-index" property
-//  2) when clicking on the [Backdrop] the [SideDrawer] closed
+
 
 export default MainNavigation;

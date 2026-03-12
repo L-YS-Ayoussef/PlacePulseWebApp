@@ -42,7 +42,7 @@ const Modal = props => {
         <ModalOverlay {...props} />
       </CSSTransition>
     </React.Fragment>
-  ); // [ <ModalOverlay {...props} /> ] --> using the spread operator to get the object [props], also you can add properties for example -> [{...props, text=""}]
+  );
 };
 
 export default Modal;

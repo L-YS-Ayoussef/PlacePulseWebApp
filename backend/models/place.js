@@ -15,15 +15,10 @@ const placeSchema = new Schema(
     title: { type: String, required: true },
     description: { type: String, required: true },
 
-    // Cover image used in cards / lists
     image: { type: String, required: true },
-
-    // Full place gallery
     media: { type: [mediaItemSchema], default: [] },
-
+    
     address: { type: String, required: true },
-
-    // Detailed directions, not used by geocoding
     addressNotes: { type: String, default: "" },
 
     category: { type: String, default: "other" },
