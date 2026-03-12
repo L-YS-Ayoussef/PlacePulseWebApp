@@ -9,6 +9,7 @@ const router = express.Router();
 
 router.get("/", placesControllers.getRecentPlaces);
 router.get("/user/:uid", placesControllers.getPlacesByUserId);
+router.get("/search/semantic", placesControllers.searchSemanticPlaces);
 router.get("/:pid", placesControllers.getPlaceById);
 
 router.use(checkAuth);

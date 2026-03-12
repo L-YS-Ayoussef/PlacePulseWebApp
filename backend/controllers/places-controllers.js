@@ -9,6 +9,11 @@ const Review = require("../models/review");
 const User = require("../models/user");
 const Collection = require("../models/collection");
 const { deletePlaceInsight } = require("../util/place-insights-ai");
+const {
+  upsertPlaceEmbedding,
+  deletePlaceEmbedding,
+  searchPlacesBySemanticQuery,
+} = require("../util/place-search-embeddings");
 
 const serializeDoc = (doc) =>
   doc.toObject({ getters: true, versionKey: false });
@@ -98,6 +103,35 @@ const getRecentPlaces = async (req, res, next) => {
   }
 
   res.json({ places: (places || []).map(serializeDoc) });
+};
+
+const searchSemanticPlaces = async (req, res, next) => {
+  const query = `${req.query.q || ""}`.trim();
+  const parsedLimit = parseInt(req.query.limit, 10);
+  const limit = Number.isNaN(parsedLimit)
+    ? 24
+    : Math.min(Math.max(parsedLimit, 1), 50);
+
+  if (query.length < 2) {
+    return next(
+      new HttpError(
+        "Please enter at least 2 characters for semantic search.",
+        422,
+      ),
+    );
+  }
+
+  try {
+    const places = await searchPlacesBySemanticQuery(query, limit);
+    res.json({ places });
+  } catch (err) {
+    return next(
+      new HttpError(
+        err.message || "Semantic place search failed, please try again later.",
+        500,
+      ),
+    );
+  }
 };
 
 const getPlaceById = async (req, res, next) => {
@@ -217,6 +251,12 @@ const createPlace = async (req, res, next) => {
     return next(new HttpError("Creating place failed, please try again.", 500));
   }
 
+  try {
+    await upsertPlaceEmbedding(createdPlace);
+  } catch (embeddingError) {
+    console.log("Place embedding generation failed:", embeddingError.message);
+  }
+
   res.status(201).json({ place: serializeDoc(createdPlace) });
 };
 
@@ -319,6 +359,12 @@ const updatePlace = async (req, res, next) => {
 
   cleanupFiles(removedMedia);
 
+  try {
+    await upsertPlaceEmbedding(place);
+  } catch (embeddingError) {
+    console.log("Place embedding update failed:", embeddingError.message);
+  }
+
   res.status(200).json({ place: serializeDoc(place) });
 };
 
@@ -392,12 +438,15 @@ const deletePlace = async (req, res, next) => {
   }
 
   cleanupFiles(filePaths);
+
   await deletePlaceInsight(placeId);
+  await deletePlaceEmbedding(placeId);
 
   res.status(200).json({ message: "Deleted place." });
 };
 
 exports.getRecentPlaces = getRecentPlaces;
+exports.searchSemanticPlaces = searchSemanticPlaces;
 exports.getPlaceById = getPlaceById;
 exports.getPlacesByUserId = getPlacesByUserId;
 exports.createPlace = createPlace;

@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import Card from "../../Shared/Components/UIElement/Card";
 import Button from "../../Shared/Components/FormElements/Button";
@@ -17,6 +17,7 @@ import "./PlaceItem.css";
 
 const PlaceItem = (props) => {
   const auth = useContext(AuthContext);
+  const navigate = useNavigate();
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
   const [showMap, setShowMap] = useState(false);
@@ -27,7 +28,9 @@ const PlaceItem = (props) => {
     !props.hideOwnerActions && auth.userId === props.creatorId;
 
   const hasCustomSaveAction = typeof props.onSavePlace === "function";
-
+  const isCollectionCardMode =
+    hasCustomSaveAction && props.saveButtonText === "UNSAVE";
+  
   const openMap = () => setShowMap(true);
   const closeMap = () => setShowMap(false);
 
@@ -66,6 +69,10 @@ const PlaceItem = (props) => {
         url: `${window.location.origin}/places/${props.id}/details`,
       });
     } catch (err) {}
+  };
+
+  const openDetailsHandler = () => {
+    navigate(`/places/${props.id}/details`);
   };
 
   const saveHandler = () => {
@@ -129,7 +136,17 @@ const PlaceItem = (props) => {
         <Card className="place-item__content">
           {isLoading && <LoadingSpinner asOverlay />}
 
-          <div className="place-item__image">
+          <div
+            className="place-item__image"
+            onClick={openDetailsHandler}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                openDetailsHandler();
+              }
+            }}
+          >
             <img
               src={`http://localhost:5000/${props.image}`}
               alt={props.title}
@@ -169,33 +186,59 @@ const PlaceItem = (props) => {
             <p>{props.description}</p>
           </div>
 
-          <div className="place-item__actions">
-            <div className="place-item__actions-group">
-              <Button inverse onClick={openMap}>
-                VIEW ON MAP
-              </Button>
+          <div
+            className={`place-item__actions ${
+              isCollectionCardMode ? "place-item__actions--collection" : ""
+            }`}
+          >
+            {isCollectionCardMode ? (
+              <React.Fragment>
+                <div className="place-item__actions-group">
+                  <Button inverse onClick={openMap}>
+                    VIEW ON MAP
+                  </Button>
 
-              <Button to={`/places/${props.id}/details`}>EXPERIENCES</Button>
+                  <Button inverse onClick={sharePlaceHandler}>
+                    SHARE
+                  </Button>
+                </div>
 
-              {auth.isLoggedIn && (
-                <Button inverse onClick={saveHandler}>
-                  {props.saveButtonText || "SAVE"}
-                </Button>
-              )}
+                <div className="place-item__actions-group place-item__actions-group--right place-item__actions-group--collection-bottom">
+                  <Button onClick={saveHandler}>{props.saveButtonText}</Button>
+                </div>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <div className="place-item__actions-group">
+                  <Button inverse onClick={openMap}>
+                    VIEW ON MAP
+                  </Button>
 
-              <Button inverse onClick={sharePlaceHandler}>
-                SHARE
-              </Button>
-            </div>
+                  <Button to={`/places/${props.id}/details`}>
+                    EXPERIENCES
+                  </Button>
 
-            {showOwnerActions && (
-              <div className="place-item__actions-group place-item__actions-group--right">
-                <Button to={`/places/${props.id}`}>EDIT</Button>
+                  {auth.isLoggedIn && (
+                    <Button inverse onClick={saveHandler}>
+                      {props.saveButtonText || "SAVE"}
+                    </Button>
+                  )}
 
-                <Button danger onClick={showDeleteWarningHandler}>
-                  DELETE
-                </Button>
-              </div>
+                  <Button inverse onClick={sharePlaceHandler}>
+                    SHARE
+                  </Button>
+                </div>
+
+                {showOwnerActions && (
+                  <div className="place-item__actions-group place-item__actions-group--right">
+                    <Button to={`/places/${props.id}`}>EDIT</Button>
+
+                    <Button danger onClick={showDeleteWarningHandler}>
+                      DELETE
+                    </Button>
+                  </div>
+                )}
+              </React.Fragment>
             )}
           </div>
         </Card>

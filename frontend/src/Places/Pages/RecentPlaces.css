@@ -1,0 +1,49 @@
+.recent-places-search {
+  width: 90%;
+  max-width: 72rem;
+  margin: 6rem auto 1rem;
+}
+
+.recent-places-search__card {
+  padding: 1.25rem;
+}
+
+.recent-places-search__header h1 {
+  margin: 0 0 0.35rem;
+  color: var(--text);
+}
+
+.recent-places-search__header p {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+}
+
+.recent-places-search__form textarea {
+  width: 100%;
+  min-height: 6rem;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font: inherit;
+  color: var(--text);
+  background: #fff;
+}
+
+.recent-places-search__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.9rem;
+}
+
+.recent-places-search__active-query {
+  margin: 1rem 0 0;
+  color: var(--text-muted);
+}
+
+.recent-places-search__empty {
+  width: 90%;
+  max-width: 72rem;
+  margin: 1rem auto 0;
+}

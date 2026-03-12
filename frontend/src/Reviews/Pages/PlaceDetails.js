@@ -22,6 +22,7 @@ import { formatDate } from "../../Shared/util/date";
 import { shareUrl } from "../../Shared/util/share";
 import PlaceInsightsPanel from "../../AI/Components/PlaceInsightsPanel";
 import "./PlaceDetails.css";
+import MapModal2 from "../../Shared/Components/UIElement/Map2";
 
 const getPlaceMedia = (place) => {
   if (!place) {
@@ -58,6 +59,8 @@ const PlaceDetails = () => {
   const [placeInsight, setPlaceInsight] = useState(null);
   const [insightLoading, setInsightLoading] = useState(false);
   const [askingAiQuestion, setAskingAiQuestion] = useState(false);
+
+  const [showMap, setShowMap] = useState(false);
 
   const fetchPlaceInsight = useCallback(async () => {
     setInsightLoading(true);
@@ -282,6 +285,14 @@ const PlaceDetails = () => {
     } catch (err) {}
   };
 
+  const openMapHandler = () => {
+    setShowMap(true);
+  };
+
+  const closeMapHandler = () => {
+    setShowMap(false);
+  };
+
   if (isLoading && !place) {
     return (
       <div className="center">
@@ -330,6 +341,19 @@ const PlaceDetails = () => {
               alt={place?.title || "Place media"}
             />
           )}
+        </div>
+      </Modal>
+
+      <Modal
+        show={showMap}
+        onCancel={closeMapHandler}
+        header={place?.address || "Location"}
+        contentClass="place-item__modal-content"
+        footerClass="place-item__modal-actions"
+        footer={<Button onClick={closeMapHandler}>CLOSE</Button>}
+      >
+        <div className="map-container">
+          {place?.location && <MapModal2 center={place.location} zoom={16} />}
         </div>
       </Modal>
 
@@ -405,11 +429,16 @@ const PlaceDetails = () => {
               </p>
 
               <div className="place-details__summary-actions">
+                <Button inverse onClick={openMapHandler}>
+                  VIEW ON MAP
+                </Button>
+
                 {auth.isLoggedIn && (
                   <Button inverse onClick={() => setShowSaveModal(true)}>
                     SAVE
                   </Button>
                 )}
+
                 <Button inverse onClick={sharePlaceHandler}>
                   SHARE
                 </Button>

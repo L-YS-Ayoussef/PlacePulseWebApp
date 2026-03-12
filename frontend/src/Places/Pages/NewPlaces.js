@@ -160,7 +160,7 @@ const NewPlace = () => {
           id="address"
           element="input"
           type="text"
-          label="Address (used for map coordinates)"
+          label="Address"
           validators={[VALIDATOR_REQUIRE()]}
           errorText="Please enter a valid address."
           onInput={inputHandler}
